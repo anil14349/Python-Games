@@ -123,7 +123,7 @@ class UnoGame:
             has_draw_two = any(c.value == 'Draw Two' for c in next_player.hand)
             
             if not has_draw_two:
-                # Draw accumulated cards
+                # Draw accumulated cards and skip turn
                 cards_needed = self.cards_to_draw
                 if not self.reshuffle_if_needed(cards_needed):
                     # If we can't get enough cards, draw what we can
@@ -134,11 +134,8 @@ class UnoGame:
                         next_player.add_card(self.deck.pop())
                 
                 self.cards_to_draw = 0  # Reset accumulated cards
-                self.next_player()
-            else:
-                # Next player might stack another +2
-                self.next_player()
-                
+                self.next_player()  # Skip their turn after drawing
+            # If they have a Draw Two, they can stack it on their turn
         elif card.value == 'Wild Draw Four':
             next_player = self.players[self.get_next_player_index()]
             cards_needed = 4
@@ -166,6 +163,8 @@ class UnoGame:
 
         played_card = player.remove_card(card_index)
         if played_card.color == 'Wild':
+            if not chosen_color in Card.COLORS:
+                return False
             played_card.color = chosen_color
 
         self.discard_pile.append(played_card)
@@ -173,6 +172,20 @@ class UnoGame:
         return True
 
     def draw_card(self, player_index: int):
+        # If there are accumulated cards to draw (from Draw Two/Four), draw those first
+        if self.cards_to_draw > 0:
+            cards_needed = self.cards_to_draw
+            if not self.reshuffle_if_needed(cards_needed):
+                cards_needed = len(self.deck)
+            
+            for _ in range(cards_needed):
+                if self.deck:
+                    self.players[player_index].add_card(self.deck.pop())
+            
+            self.cards_to_draw = 0  # Reset accumulated cards
+            return
+            
+        # Normal draw one card
         if self.deck:
             self.players[player_index].add_card(self.deck.pop())
         elif len(self.discard_pile) > 1:
@@ -721,8 +734,19 @@ Click '?' anytime to see these instructions again.
                 messagebox.showerror("Invalid Move", "This card cannot be played!")
 
     def draw_card(self):
-        self.game.draw_card(self.game.current_player_index)
         current_player = self.game.players[self.game.current_player_index]
+        
+        # If there are cards that must be drawn
+        if self.game.cards_to_draw > 0:
+            self.game.draw_card(self.game.current_player_index)
+            messagebox.showinfo("Draw Cards", 
+                              f"Drawing {self.game.cards_to_draw} cards")
+            self.game.next_player()
+            self.update_display()
+            return
+            
+        # Normal draw one card
+        self.game.draw_card(self.game.current_player_index)
         
         if not current_player.has_playable_card(self.game.get_top_card()):
             messagebox.showinfo("No Playable Cards", 
