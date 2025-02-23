@@ -217,10 +217,10 @@ class UnoGUI:
         
         self.button_style = {
             'bg': self.colors['button'],
-            'fg': 'white',
+            'fg': 'black',
             'font': ('Helvetica', 12, 'bold'),
             'activebackground': self.colors['button_hover'],
-            'activeforeground': 'white',
+            'activeforeground': 'black',
             'relief': 'flat',
             'cursor': 'hand2',
             'padx': 20,
@@ -320,12 +320,12 @@ class UnoGUI:
                                    command=self.draw_card,
                                    font=('Helvetica', 18, 'bold'),
                                    bg=self.colors['button'],
-                                   fg='white',
+                                   fg='black',
                                    activebackground=self.colors['button_hover'],
-                                   activeforeground='white',
+                                   activeforeground='black',
                                    width=8, height=3,
                                    relief='flat',
-                                   cursor='hand2')
+                                   cursor='hand2')  # Change cursor to hand when hovering
         self.draw_button.pack(padx=3, pady=3)
         
         # Add hover effect to draw button
